@@ -60,5 +60,32 @@ public sealed class GoogleBuscaDesafioTest
             $"A pagina de resultados nao foi carregada. URL: {urlAtual} | Titulo: {tituloAtual}");
     }
 
+    [TestMethod]
+    public void Exercicio2_Autocompletar_DeveSelecionarTerceiraSugestao()
+    {
+        const string termo = "C# unit testing";
+        const string seletorSugestoes =
+            ".search-suggestions-list li, .sbox-suggestions li, [role='option']";
+
+        SearchBox.SendKeys(termo);
+
+        var terceiraSugestao = _wait.Until(driver =>
+        {
+            var sugestoes = driver.FindElements(By.CssSelector(seletorSugestoes));
+            return sugestoes.Count >= 3 ? sugestoes[2] : null;
+        });
+
+        Assert.IsNotNull(terceiraSugestao, "A lista de sugestoes nao exibiu ao menos tres opcoes.");
+
+        var textoSugestao = terceiraSugestao.Text;
+        terceiraSugestao.Click();
+
+        _wait.Until(driver => driver.Url.Contains("q=", StringComparison.OrdinalIgnoreCase));
+
+        Assert.IsTrue(
+            _driver.Url.Contains("q=", StringComparison.OrdinalIgnoreCase),
+            $"A navegacao para os resultados de '{textoSugestao}' nao ocorreu. URL: {_driver.Url}");
+    }
+
     private IWebElement SearchBox => _driver.FindElement(By.Name("q"));
 }
