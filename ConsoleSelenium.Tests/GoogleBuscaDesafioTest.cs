@@ -40,5 +40,25 @@ public sealed class GoogleBuscaDesafioTest
         _driver?.Dispose();
     }
 
+    [TestMethod]
+    public void Exercicio1_PesquisaBasica_DeveValidarResultados()
+    {
+        const string termo = "Selenium WebDriver C#";
+
+        SearchBox.SendKeys(termo + Keys.Enter);
+
+        _wait.Until(driver =>
+            driver.Url.Contains("q=", StringComparison.OrdinalIgnoreCase) ||
+            driver.Title.Contains(termo, StringComparison.OrdinalIgnoreCase));
+
+        var urlAtual = _driver.Url;
+        var tituloAtual = _driver.Title;
+
+        Assert.IsTrue(
+            urlAtual.Contains("q=", StringComparison.OrdinalIgnoreCase) ||
+            tituloAtual.Contains(termo, StringComparison.OrdinalIgnoreCase),
+            $"A pagina de resultados nao foi carregada. URL: {urlAtual} | Titulo: {tituloAtual}");
+    }
+
     private IWebElement SearchBox => _driver.FindElement(By.Name("q"));
 }
