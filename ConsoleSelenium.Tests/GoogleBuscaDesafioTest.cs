@@ -87,5 +87,43 @@ public sealed class GoogleBuscaDesafioTest
             $"A navegacao para os resultados de '{textoSugestao}' nao ocorreu. URL: {_driver.Url}");
     }
 
+    [TestMethod]
+    public void Exercicio3_Historico_DeveVoltarParaResultados()
+    {
+        const string termo = "Automated Testing";
+        const string seletorLinksOrganicos =
+            "article[data-testid='result'] h2 a, a[data-testid='result-title-a'], .result__a";
+
+        SearchBox.SendKeys(termo + Keys.Enter);
+
+        _wait.Until(driver => driver.Url.Contains("q=", StringComparison.OrdinalIgnoreCase));
+        var urlResultados = _driver.Url;
+
+        var primeiroLink = _wait.Until(driver =>
+        {
+            var links = driver.FindElements(By.CssSelector(seletorLinksOrganicos));
+            return links.Count > 0 ? links[0] : null;
+        });
+
+        Assert.IsNotNull(primeiroLink, "Nenhum link organico foi encontrado na pagina de resultados.");
+
+        primeiroLink.Click();
+
+        _wait.Until(driver => !driver.Url.Contains("duckduckgo.com", StringComparison.OrdinalIgnoreCase));
+
+        var urlExterna = _driver.Url;
+        Assert.IsFalse(
+            urlExterna.Contains("duckduckgo.com", StringComparison.OrdinalIgnoreCase),
+            $"A pagina externa nao foi carregada. URL: {urlExterna}");
+
+        _driver.Navigate().Back();
+
+        _wait.Until(driver => driver.Url.Contains("duckduckgo.com", StringComparison.OrdinalIgnoreCase));
+
+        Assert.IsTrue(
+            _driver.Url.Contains("q=", StringComparison.OrdinalIgnoreCase),
+            $"A pagina de resultados nao foi restaurada. Esperado: {urlResultados} | Atual: {_driver.Url}");
+    }
+
     private IWebElement SearchBox => _driver.FindElement(By.Name("q"));
 }
